@@ -6,6 +6,16 @@ local TrackingManager = {}
 
 TrackingManager.visited_chests = {}
 TrackingManager.visited_objectives = {}
+TrackingManager.visited_shrines = {}
+
+function TrackingManager:is_shrine(actor)
+    local name = actor:get_skin_name()
+    local actor_id = actor:get_id()
+    if string.find(name, "Shrine") and not self.visited_shrines[actor_id] then
+        return true
+    end
+    return false
+end
 
 function TrackingManager:is_chest(actor)
     local chest_types = { "Chest_Common", "Basic_Chest" }
@@ -114,12 +124,31 @@ function TrackingManager:track_objectives(actor, gui)
     end
 end
 
+function TrackingManager:track_shrines(actor, gui)
+    local distance = Utils.distance_to(actor)
+    local actor_id = actor:get_id()
+
+    if distance < 2 then
+        self.visited_shrines[actor_id] = true
+        return
+    end
+
+    if gui.elements.track_shrines_toggle:get() and self:is_shrine(actor) then
+        graphics.circle_3d(actor:get_position(), 1, colors.shrines, 1)
+        graphics.text_3d("Shrine", actor:get_position(), 12, color_white(255))
+        if gui.elements.draw_misc_lines_toggle:get() then
+            graphics.line(get_player_position(), actor:get_position(), colors.shrines, 1)
+        end
+    end
+end
+
 function TrackingManager:track_all(gui)
     local actors = actors_manager:get_all_actors()
     for _, actor in pairs(actors) do
         self:track_monsters(actor, gui)
         self:track_chests(actor, gui)
         self:track_objectives(actor, gui)
+        self:track_shrines(actor, gui)
     end
 end
 

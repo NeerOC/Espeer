@@ -16,7 +16,8 @@ gui.elements = {
     draw_chests_lines_toggle = checkbox:new(false, get_hash(plugin_label .. "_draw_chests_lines_toggle")),
     misc_tree = tree_node:new(3),
     track_objectives_toggle = checkbox:new(false, get_hash(plugin_label .. "_track_objectives_toggle")),
-    draw_objectives_lines_toggle = checkbox:new(false, get_hash(plugin_label .. "_draw_objectives_lines_toggle")),
+    track_shrines_toggle = checkbox:new(false, get_hash(plugin_label .. "_track_shrines_toggle")),
+    draw_misc_lines_toggle = checkbox:new(false, get_hash(plugin_label .. "_draw_misc_lines_toggle")),
 }
 
 function gui:render()
@@ -47,10 +48,9 @@ function gui:render()
     end
 
     if gui.elements.misc_tree:push("Misc") then
-        gui.elements.track_objectives_toggle:render("Objectives",
-            "Do you want to track Quest Objectives / Dungeon Objectives")
-        gui.elements.draw_objectives_lines_toggle:render("Draw Lines",
-            "Do you want to draw lines to the tracked objectives?")
+        gui.elements.track_objectives_toggle:render("Objectives", "Track Quest Objectives / Dungeon Objectives")
+        gui.elements.track_shrines_toggle:render("Shrines", "Track Shrines")
+        gui.elements.draw_misc_lines_toggle:render("Draw Lines", "Draw lines to tracked objectives and shrines")
         gui.elements.misc_tree:pop()
     end
 

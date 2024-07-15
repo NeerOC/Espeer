@@ -7,6 +7,7 @@ local colors = {
     chests = color_white(255),
     resplendent_chests = color_purple(255),
 
+    shrines = color_gold(255),
     objectives = color_green(255),
 }
 
