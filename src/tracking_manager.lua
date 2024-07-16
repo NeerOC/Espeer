@@ -4,38 +4,12 @@ local colors = require("data.colors")
 
 local TrackingManager = {
     visited_objects = {},
-    max_entries = 100,
     last_reset_time = 0,
     reset_interval = 300 -- Let's do a reset every 5 min
 }
 
 function TrackingManager:add_visited_object(id)
-    self.visited_objects[id] = os.time()
-    self:clean_visited()
-end
-
-function TrackingManager:clean_visited()
-    local count = 0
-    for _ in pairs(self.visited_objects) do
-        count = count + 1
-    end
-
-    if count > self.max_entries then
-        local temp = {}
-        for id, timestamp in pairs(self.visited_objects) do
-            table.insert(temp, { id = id, timestamp = timestamp })
-        end
-        table.sort(temp, function(a, b) return a.timestamp > b.timestamp end)
-
-        self.visited_objects = {}
-        for i = 1, self.max_entries do
-            if temp[i] then
-                self.visited_objects[temp[i].id] = temp[i].timestamp
-            else
-                break
-            end
-        end
-    end
+    self.visited_objects[id] = true
 end
 
 function TrackingManager:is_shrine(actor)
@@ -175,7 +149,7 @@ end
 function TrackingManager:track_all(gui)
     local current_time = get_time_since_inject()
 
-    -- Let's check if we should reset.
+    -- Let's reset on timer
     if current_time - self.last_reset_time > self.reset_interval then
         self.visited_objects = {}
         self.last_reset_time = current_time
