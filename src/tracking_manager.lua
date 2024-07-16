@@ -26,7 +26,7 @@ end
 function TrackingManager:is_shrine(actor)
     local name = actor:get_skin_name()
     local position = actor:get_position()
-    if string.find(name, "Shrine") and not self:is_position_visited(position) then
+    if string.find(name, "Shrine_DRLG") and not self:is_position_visited(position) then
         return true
     end
     return false
