@@ -2,20 +2,31 @@ local Utils = require("utils.utils")
 local Data = require("data.custom_objects")
 local colors = require("data.colors")
 
+
 local TrackingManager = {
-    visited_objects = {},
+    visited_positions = {},
     last_reset_time = 0,
-    reset_interval = 300 -- Let's do a reset every 5 min
+    reset_interval = 300,  -- Reset interval
+    position_threshold = 3 -- Distance threshold to consider a position as visited
 }
 
-function TrackingManager:add_visited_object(id)
-    self.visited_objects[id] = true
+function TrackingManager:add_visited_position(position)
+    table.insert(self.visited_positions, position)
+end
+
+function TrackingManager:is_position_visited(position)
+    for _, visited_pos in ipairs(self.visited_positions) do
+        if position:dist_to(visited_pos) < self.position_threshold then
+            return true
+        end
+    end
+    return false
 end
 
 function TrackingManager:is_shrine(actor)
     local name = actor:get_skin_name()
-    local actor_id = actor:get_id()
-    if string.find(name, "Shrine") and not self.visited_objects[actor_id] then
+    local position = actor:get_position()
+    if string.find(name, "Shrine") and not self:is_position_visited(position) then
         return true
     end
     return false
@@ -24,13 +35,11 @@ end
 function TrackingManager:is_chest(actor)
     local chest_types = { "Chest_Common", "Basic_Chest" }
     local name = actor:get_skin_name()
+    local position = actor:get_position()
 
     for _, chest_type in ipairs(chest_types) do
-        if string.find(name, chest_type) then
-            local actor_id = actor:get_id()
-            if not self.visited_objects[actor_id] then
-                return true
-            end
+        if string.find(name, chest_type) and not self:is_position_visited(position) then
+            return true
         end
     end
 
@@ -40,13 +49,11 @@ end
 function TrackingManager:is_resplendent_chest(actor)
     local chest_types = { "Chest_Rare", "LootChest", "Rare_Chest" }
     local name = actor:get_skin_name()
+    local position = actor:get_position()
 
     for _, chest_type in ipairs(chest_types) do
-        if string.find(name, chest_type) then
-            local actor_id = actor:get_id()
-            if not self.visited_objects[actor_id] then
-                return true
-            end
+        if string.find(name, chest_type) and not self:is_position_visited(position) then
+            return true
         end
     end
 
@@ -55,8 +62,8 @@ end
 
 function TrackingManager:is_quest_objective(actor)
     local name = actor:get_skin_name()
-    local actor_id = actor:get_id()
-    if Data.quest_objectives[name] and not self.visited_objects[actor_id] then
+    local position = actor:get_position()
+    if Data.quest_objectives[name] and not self:is_position_visited(position) then
         return true
     end
     return false
@@ -88,60 +95,66 @@ end
 
 function TrackingManager:track_chests(actor, gui)
     local distance = Utils.distance_to(actor)
-    local actor_id = actor:get_id()
+    local position = actor:get_position()
 
     if distance < 2 then
-        self:add_visited_object(actor_id)
+        if self:is_chest(actor) or self:is_resplendent_chest(actor) then
+            self:add_visited_position(position)
+        end
         return
     end
 
     if gui.elements.track_normal_chests_toggle:get() and self:is_chest(actor) then
-        graphics.circle_3d(actor:get_position(), 1, colors.chests, 1)
-        graphics.text_3d("Chest", actor:get_position(), 12, color_white(255))
+        graphics.circle_3d(position, 1, colors.chests, 1)
+        graphics.text_3d("Chest", position, 12, color_white(255))
         if gui.elements.draw_chests_lines_toggle:get() then
-            graphics.line(get_player_position(), actor:get_position(), colors.chests, 1)
+            graphics.line(get_player_position(), position, colors.chests, 1)
         end
     elseif gui.elements.track_resplendent_chests_toggle:get() and self:is_resplendent_chest(actor) then
-        graphics.circle_3d(actor:get_position(), 0.8, colors.resplendent_chests, 3)
-        graphics.text_3d("Resplendent Chest", actor:get_position(), 14, color_white(255))
+        graphics.circle_3d(position, 0.8, colors.resplendent_chests, 3)
+        graphics.text_3d("Resplendent Chest", position, 14, color_white(255))
         if gui.elements.draw_chests_lines_toggle:get() then
-            graphics.line(get_player_position(), actor:get_position(), colors.resplendent_chests, 1)
+            graphics.line(get_player_position(), position, colors.resplendent_chests, 1)
         end
     end
 end
 
 function TrackingManager:track_objectives(actor, gui)
     local distance = Utils.distance_to(actor)
-    local actor_id = actor:get_id()
+    local position = actor:get_position()
 
     if distance < 2 then
-        self:add_visited_object(actor_id)
+        if self:is_quest_objective(actor) then
+            self:add_visited_position(position)
+        end
         return
     end
 
     if gui.elements.track_objectives_toggle:get() and self:is_quest_objective(actor) then
-        graphics.circle_3d(actor:get_position(), 1, colors.objectives, 1)
-        graphics.text_3d("Objective", actor:get_position(), 12, colors.objectives)
+        graphics.circle_3d(position, 1, colors.objectives, 1)
+        graphics.text_3d("Objective", position, 14, colors.objectives)
         if gui.elements.draw_objectives_lines_toggle:get() then
-            graphics.line(get_player_position(), actor:get_position(), colors.objectives, 1)
+            graphics.line(get_player_position(), position, colors.objectives, 1)
         end
     end
 end
 
 function TrackingManager:track_shrines(actor, gui)
     local distance = Utils.distance_to(actor)
-    local actor_id = actor:get_id()
+    local position = actor:get_position()
 
     if distance < 2 then
-        self:add_visited_object(actor_id)
+        if self:is_shrine(actor) then
+            self:add_visited_position(position)
+        end
         return
     end
 
     if gui.elements.track_shrines_toggle:get() and self:is_shrine(actor) then
-        graphics.circle_3d(actor:get_position(), 1, colors.shrines, 1)
-        graphics.text_3d("Shrine", actor:get_position(), 12, color_white(255))
+        graphics.circle_3d(position, 1, colors.shrines, 1)
+        graphics.text_3d("Shrine", position, 16, color_white(255))
         if gui.elements.draw_misc_lines_toggle:get() then
-            graphics.line(get_player_position(), actor:get_position(), colors.shrines, 1)
+            graphics.line(get_player_position(), position, colors.shrines, 1)
         end
     end
 end
@@ -151,7 +164,7 @@ function TrackingManager:track_all(gui)
 
     -- Let's reset on timer
     if current_time - self.last_reset_time > self.reset_interval then
-        self.visited_objects = {}
+        self.visited_positions = {}
         self.last_reset_time = current_time
     end
 
