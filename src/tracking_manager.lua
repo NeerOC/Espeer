@@ -133,7 +133,7 @@ function TrackingManager:track_objectives(actor, gui)
     if gui.elements.track_objectives_toggle:get() and self:is_quest_objective(actor) then
         graphics.circle_3d(position, 1, colors.objectives, 1)
         graphics.text_3d("Objective", position, 14, colors.objectives)
-        if gui.elements.draw_objectives_lines_toggle:get() then
+        if gui.elements.draw_misc_lines_toggle:get() then
             graphics.line(get_player_position(), position, colors.objectives, 1)
         end
     end
