@@ -14,7 +14,8 @@ local custom_objects = {
         ["Carryable_StoneCarving"] = true,
         ["Cultist_SacrificePillar_02"] = true,
         ["Cultist_SacrificePillar_01"] = true,
-        ["DGN_FloodedDepths_Lever_01_Dyn"] = true
+        ["DGN_FloodedDepths_Lever_01_Dyn"] = true,
+        ["Carryable_AncientsStatue"] = true,
     }
 }
 
