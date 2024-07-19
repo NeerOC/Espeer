@@ -69,6 +69,15 @@ function TrackingManager:is_quest_objective(actor)
     return false
 end
 
+function TrackingManager:is_resource(actor)
+    local name = actor:get_skin_name()
+    local position = actor:get_position()
+    if name:match("HarvestNode") and not self:is_position_visited(position) then
+        return true
+    end
+    return false
+end
+
 function TrackingManager:track_monsters(actor, gui)
     if gui.elements.track_common_toggle:get() and target_selector.is_valid_enemy(actor) and not actor:is_elite() and not actor:is_champion() and not actor:is_boss() then
         graphics.circle_3d(actor:get_position(), 1, colors.common_monsters, 1)
@@ -159,6 +168,26 @@ function TrackingManager:track_shrines(actor, gui)
     end
 end
 
+function TrackingManager:track_resources(actor, gui)
+    local distance = Utils.distance_to(actor)
+    local position = actor:get_position()
+
+    if distance < 2 then
+        if self:is_resource(actor) then
+            self:add_visited_position(position)
+        end
+        return
+    end
+
+    if gui.elements.track_resources_toggle:get() and self:is_resource(actor) then
+        graphics.circle_3d(position, 0.5, colors.resources, 1)
+        graphics.text_3d("Resource", position, 16, color_white(255))
+        if gui.elements.draw_misc_lines_toggle:get() then
+            graphics.line(get_player_position(), position, colors.resources, 1)
+        end
+    end
+end
+
 function TrackingManager:track_all(gui)
     local current_time = get_time_since_inject()
 
@@ -174,6 +203,7 @@ function TrackingManager:track_all(gui)
         self:track_chests(actor, gui)
         self:track_objectives(actor, gui)
         self:track_shrines(actor, gui)
+        self:track_resources(actor, gui)
     end
 end
 
