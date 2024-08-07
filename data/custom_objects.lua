@@ -16,6 +16,7 @@ local custom_objects = {
         ["Cultist_SacrificePillar_01"] = true,
         ["DGN_FloodedDepths_Lever_01_Dyn"] = true,
         ["Carryable_AncientsStatue"] = true,
+        ["S05_Reputation_Experience_PowerUp_Actor"] = true
     }
 }
 
